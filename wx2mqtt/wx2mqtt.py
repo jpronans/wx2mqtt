@@ -5,7 +5,7 @@ import logging
 import paho.mqtt.client as mqtt
 
 DEBUG = False
-INFO = True 
+INFO = True
 
 if (DEBUG):
     logging.basicConfig(level=logging.DEBUG)
@@ -36,27 +36,28 @@ def callback(packet):
     if (DEBUG):
         logging.info(packet['raw'])
 
-    if 'from' in packet:
-        t = packet['from']
-        # Connect to the broker
-        client = mqtt.Client("wx2mqtt", clean_session=True)
-        # Put in some error checking
-        client.connect(parser.get('mqtt', 'server'))
+    if 'weather' in packet:
+        if 'from' in packet:
+            t = packet['from']
+            # Connect to the broker
+            client = mqtt.Client("wx2mqtt", clean_session=True)
+            # Put in some error checking
+            client.connect(parser.get('mqtt', 'server'))
 
-        extractors = [extractor("wind_direction", topic=t),
-                      extractor("wind_speed", topic=t, fmt="{:3.2f}"),
-                      extractor("wind_gust", topic=t, fmt="{:3.2f}"),
-                      extractor("temp", topic=t, fmt="{:-3.2f}"),
-                      extractor("rain_1h", topic=t, fmt="{:4.2f}"),
-                      #extractor("rain_24h", topic=t, fmt="{:4.2f}"),
-                      extractor("humidity", topic=t),
-                      extractor("hPa", topic=t)
-                      ]
-        for thingy in extractors:
-            thingy.extract(client, packet)
-
-    # close the mqtt connection
-    client.disconnect()
+            extractors = [extractor("wind_direction", topic=t),
+                          extractor("wind_speed", topic=t, fmt="{:3.2f}"),
+                          extractor("wind_gust", topic=t, fmt="{:3.2f}"),
+                          extractor("temperature", topic=t, fmt="{:-3.2f}"),
+                          extractor("rain_1h", topic=t, fmt="{:4.2f}"),
+                          extractor("rain_since_midnight", topic=t, fmt="{:4.2f}"),
+                          extractor("rain_24h", topic=t, fmt="{:4.2f}"),
+                          extractor("humidity", topic=t),
+                          extractor("pressure", topic=t)
+                          ]
+            for thingy in extractors:
+                thingy.extract(client, packet['weather'])
+            # close the mqtt connection
+            client.disconnect()
 
 parser = SafeConfigParser()
 parser.read('config.ini')
