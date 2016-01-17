@@ -7,7 +7,6 @@ import paho.mqtt.client as mqtt
 parser = SafeConfigParser()
 parser.read('config.ini')
 if parser.get('logging', 'level') == "debug":
-    print("Debug enabled")
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
