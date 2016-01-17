@@ -4,13 +4,12 @@ import aprslib
 import logging
 import paho.mqtt.client as mqtt
 
-DEBUG = False
-INFO = True
-
-if (DEBUG):
+parser = SafeConfigParser()
+parser.read('config.ini')
+if parser.get('logging', 'level') == "debug":
+    print("Debug enabled")
     logging.basicConfig(level=logging.DEBUG)
-
-if (INFO):
+else:
     logging.basicConfig(level=logging.INFO)
 
 
@@ -27,20 +26,18 @@ class extractor:
                            self.fmt.format(packet[self.key]))
             # Crude Rate Limit
             time.sleep(1)
-            if (INFO):
-                logging.info('Pushed {} value of {} to MQTT'.format(self.key, packet[self.key]))
+            logging.info('Pushed {} value of {} to MQTT'.format(self.key, packet[self.key]))
 
 
 def callback(packet):
 
-    if (DEBUG):
-        logging.info(packet['raw'])
+    logging.debug(packet['raw'])
 
     if 'weather' in packet:
         if 'from' in packet:
             t = packet['from']
             # Connect to the broker
-            client = mqtt.Client("wx2mqtt", clean_session=True)
+            client = mqtt.Client(parser.get('mqtt', 'clientname'), clean_session=True)
             # Put in some error checking
             client.connect(parser.get('mqtt', 'server'))
 
@@ -59,8 +56,8 @@ def callback(packet):
             # close the mqtt connection
             client.disconnect()
 
-parser = SafeConfigParser()
-parser.read('config.ini')
+
+
 
 
 # Prepare the APRS connection
