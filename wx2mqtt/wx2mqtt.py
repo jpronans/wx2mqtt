@@ -1,8 +1,10 @@
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import time
 import aprslib
 import logging
 import paho.mqtt.client as mqtt
+import string
+import random
 
 parser = SafeConfigParser()
 parser.read('config.ini')
@@ -10,6 +12,11 @@ if parser.get('logging', 'level') == "debug":
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
+
+def randomString(stringLength=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
 
 
 # Thanks g0hww for his patient explanations
@@ -36,7 +43,7 @@ def callback(packet):
         if 'from' in packet:
             t = packet['from']
             # Connect to the broker
-            client = mqtt.Client(parser.get('mqtt', 'clientname'), clean_session=True)
+            client = mqtt.Client(parser.get('mqtt', 'clientname') +randomString(), clean_session=True)
             # Put in some error checking
             client.connect(parser.get('mqtt', 'server'))
 
